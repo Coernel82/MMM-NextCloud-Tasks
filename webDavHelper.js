@@ -1,6 +1,7 @@
 /* eslint-disable indent */
 const { createClient } = require("webdav");
 const ical = require('node-ical');
+const moment = require('moment');
 const transformer = require("./transformer");
 
 // TODO: this support a single instance of NexCloud as there is just one webDavAuth, however multiple urls are supported
@@ -8,13 +9,16 @@ function initWebDav(config) {
     return client = createClient(config.listUrl, config.webDavAuth);
 }
 
-function parseList(icsStrings) {
+function parseList(icsStrings,dateFormat) {
     let elements = [];
     for (const { filename, icsStr } of icsStrings) {
         const icsObj = ical.sync.parseICS(icsStr);
         Object.values(icsObj).forEach(element => {
             if (element.type === 'VTODO') {
                 element.filename = filename; // Add filename to the element
+                if (element.due) {
+                    element.dueFormatted = moment(element.due.val).format(dateFormat);
+                }
                 elements.push(element);
             }
         });
@@ -62,8 +66,6 @@ async function fetchList(config) {
     }
     return icsStrings;
 }
-
-
 
 module.exports = {
     parseList: parseList,

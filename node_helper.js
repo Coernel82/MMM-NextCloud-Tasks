@@ -6,9 +6,8 @@
  */
 
 var NodeHelper = require("node_helper");
-const { transformData, sortList, appendUrlIndex} = require("./transformer");
+const { transformData, sortList, appendUrlIndex } = require("./transformer");
 const { initWebDav, fetchList, parseList, mapEmptyPriorityTo } = require("./webDavHelper");
-
 
 module.exports = NodeHelper.create({
 	socketNotificationReceived: function(notification, payload) {
@@ -40,7 +39,7 @@ module.exports = NodeHelper.create({
 				let configWithSingleUrl = { ...config, listUrl: config.listUrl[i] };
 				console.log("[MMM-Nextcloud-Tasks] getData - configWithSingleUrl: ", configWithSingleUrl);
 				const icsList = await fetchList(configWithSingleUrl); // also add the filename to the icsStrings
-				const rawList = parseList(icsList);
+				const rawList = parseList(icsList, config.dateFormat);
 				const priorityList = mapEmptyPriorityTo(rawList, config.mapEmptyPriorityTo);
 				const indexedList = appendUrlIndex(priorityList, i);
 				const sortedList = sortList(indexedList, config.sortMethod);
@@ -88,10 +87,10 @@ module.exports = NodeHelper.create({
 			let updatedStatus = "COMPLETED";
 			let modifiedContent = vtodoContent;
 			if (modifiedContent.includes("STATUS:")) {
-				modifiedContent = modifiedContent.replace(/STATUS:(\w+)/, (match, p1) => {
+				modifiedContent = modifiedContent.replace(/STATUS:(.*)/, (match, p1) => {
 					return p1 === "COMPLETED" ? "STATUS:PENDING" : "STATUS:COMPLETED";
 				});
-				updatedStatus = /STATUS:(\w+)/.exec(modifiedContent)[1];
+				updatedStatus = /STATUS:(\w+).*/.exec(modifiedContent)[1];
 			} else {
 				modifiedContent = modifiedContent.replace("END:VTODO", "STATUS:COMPLETED\nEND:VTODO");
 			}

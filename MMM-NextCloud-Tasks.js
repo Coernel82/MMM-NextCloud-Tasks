@@ -1,4 +1,4 @@
-/* global Module, Log, moment */
+/* global Module, Log */
 
 /* Magic Mirror
  * Module: MMM-NextCloud-Tasks
@@ -6,8 +6,6 @@
  * By Jan Ryklikas
  * MIT Licensed.
  */
-
-
 
 Module.register("MMM-NextCloud-Tasks", {
 	defaults: {
@@ -100,8 +98,6 @@ Module.register("MMM-NextCloud-Tasks", {
 		return typeof listUrl === "string";
 	},
 
-
-
 	/*
 	 * getData
 	 * function example return data and show it in the module wrapper
@@ -172,13 +168,14 @@ Module.register("MMM-NextCloud-Tasks", {
 		let ul = document.createElement("ul");
 		for (const element of children) {
 			if (element.status === "COMPLETED") {
-				if (typeof this.config.hideCompletedTasksAfter === "number" && element.completed) {
-					const completedDate = moment(element.completed, "YYYYMMDDTHHmmss").toDate();
-					const daysSinceCompleted = (new Date() - completedDate) / (1000 * 60 * 60 * 24);
-					if (daysSinceCompleted > this.config.hideCompletedTasksAfter) {
-						continue;
-					}
-				}
+			    if (typeof this.config.hideCompletedTasksAfter === "number" && element.completed) {
+			        // convert ISO 8601 string to date-objekt without moment.js
+			        const completedDate = new Date(element.completed); 
+			        const daysSinceCompleted = (new Date() - completedDate) / (1000 * 60 * 60 * 24);
+			        if (daysSinceCompleted > this.config.hideCompletedTasksAfter) {
+			            continue;
+			        }
+			    }
 			}
 
 			const now = new Date();
@@ -294,9 +291,9 @@ Module.register("MMM-NextCloud-Tasks", {
 				}
 
 				if (self.config.displayStartDate && element.start) {
-					let startDate = moment(element.start).toDate();
+					let startDate = new Date(element.start); 
 					let spanStart = document.createElement("span");
-					spanStart.textContent = " " + moment(element.start).format(self.config.dateFormat);
+					spanStart.textContent = " " + startDate.toLocaleDateString(undefined, self.config.dateFormat);
 					if (now > startDate) {
 						spanStart.className = "MMM-NextCloud-Tasks-Started";
 					} else {
@@ -304,12 +301,12 @@ Module.register("MMM-NextCloud-Tasks", {
 					}
 					dateSection.appendChild(spanStart);
 				}
-				if (self.config.displayDueDate && element.due) {
-					let dueDate = moment(element.due).toDate();
+				if (self.config.displayDueDate && element.dueFormatted) {;
 					let spanDue = document.createElement("span");
-					console.log("dueDate: " + dueDate);
+					let dueDate = new Date(element.start); 
+					console.log("dueDate: " + element.dueFormatted);
 					console.log("now: " + now);
-					spanDue.textContent = " " + moment(element.due).format(self.config.dateFormat);
+					spanDue.textContent = " " + element.dueFormatted; //Date.toLocaleDateString(undefined, self.config.dateFormat);
 					if (now > dueDate) {
 						spanDue.className = "MMM-NextCloud-Tasks-Overdue";
 					} else {
@@ -477,6 +474,7 @@ Module.register("MMM-NextCloud-Tasks", {
 	socketNotificationReceived: function (notification, payload) {
 		if (notification === "MMM-NextCloud-Tasks-Helper-TODOS#" + this.identifier) {
 			this.toDoList = payload;
+			Log.log("[MMM-NextCloud-Tasks] received payload: ", payload);
 			this.updateDom();
 		}
 		if (notification === "MMM-NextCloud-Tasks-Helper-LOG#" + this.identifier) {
