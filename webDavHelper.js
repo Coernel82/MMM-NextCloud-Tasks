@@ -29,18 +29,17 @@ function parseList(icsStrings,dateFormat) {
 function mapEmptyPriorityTo(parsedList, mapEmptyPriorityTo) {
     for (let element of parsedList) {
         if (!element.hasOwnProperty('priority') || element.priority === null || element.priority === "0") { // VTODO uses strings!
-            console.log(`[MMM-Nextcloud-Tasks] Setting priority for element with filename ${element.filename} to ${mapEmptyPriorityTo}`);
+            // console.log(`[MMM-Nextcloud-Tasks] setting prio for element ${element.filename} to ${mapEmptyPriorityTo}`);
             element.priority = mapEmptyPriorityTo.toString();
         }
     }
-    console.log("[MMM-Nextcloud-Tasks] mapEmptyPriorityTo --> parsed List: ", parsedList);
     return parsedList;
 }
 
 async function fetchList(config) {
     const client = initWebDav(config);
     const directoryItems = await client.getDirectoryContents("/");
-    console.log("[MMM-Nextcloud-Tasks] fetchList:", directoryItems);
+    // console.log("[MMM-Nextcloud-Tasks] fetchList:", directoryItems);
 
     let icsStrings = [];
     for (const element of directoryItems) {

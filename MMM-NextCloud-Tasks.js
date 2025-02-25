@@ -48,7 +48,7 @@ Module.register("MMM-NextCloud-Tasks", {
 
 		//Flag for check if module is loaded
 		self.loaded = false;
-       
+
 		// Preload the sound
 		this.audio = new Audio('/modules/MMM-NextCloud-Tasks/sounds/task_finished.wav');
 		this.audio.load();
@@ -68,21 +68,22 @@ Module.register("MMM-NextCloud-Tasks", {
 				self.updateDom();
 				return;
 			}
-		// this is for the old "hideCompletedTasks" boolean which now is "hideCompletedTasksAfter" with a number
-		if (this.config.hideCompletedTasks !== null) {
-			const infoText =
-				"<span style='color:  #e34c26;'>Deprecation:</span> <span style='color: #ffffff;'>The old 'hideCompletedTasks' boolean is deprecated. Use </span>" +
-				"<span style='color: #ffcc00;'>hideCompletedTasksAfter</span><span style='color: #ffffff;'> to specify the number of days after which completed tasks are hidden." +
-				"Use. 0 to hide at once. Example: </span>" +
-			    "<br><span style='font-family: Courier; color: lightblue;'>hideCompletedTasksAfter</span>:  <span style='font-family: Courier; color: blue;'>1</span><span style='font-family: Courier; color: white;'>,</span><br></br>"
-			this.error = infoText;
-			self.updateDom();
-			return;
-		}
 
+			// this is for the old "hideCompletedTasks" boolean which now is "hideCompletedTasksAfter" with a number
+			if (this.config.hideCompletedTasks !== null) {
+				const infoText =
+					"<span style='color:  #e34c26;'>Deprecation:</span> <span style='color: #ffffff;'>The old 'hideCompletedTasks' boolean is deprecated. Use </span>" +
+					"<span style='color: #ffcc00;'>hideCompletedTasksAfter</span><span style='color: #ffffff;'> to specify the number of days after which completed tasks are hidden." +
+					"Use. 0 to hide at once. Example: </span>" +
+					"<br><span style='font-family: Courier; color: lightblue;'>hideCompletedTasksAfter</span>:  <span style='font-family: Courier; color: blue;'>1</span><span style='font-family: Courier; color: white;'>,</span><br></br>"
+				this.error = infoText;
+				self.updateDom();
+				return;
+			}
 
 			// Schedule update timer.
 			self.getData(this.config.mapEmptyPriorityTo); // TODO: here i get the data from
+
 			setInterval(function () {
 				self.getData();
 				self.updateDom();
@@ -117,8 +118,8 @@ Module.register("MMM-NextCloud-Tasks", {
 	getDom: function () {
 		let self = this;
 
-		  // Reinitialize usedUrlIndices before updating the DOM so that the headings are displayed correctly
-		  this.usedUrlIndices = [];
+		// Reinitialize usedUrlIndices before updating the DOM so that the headings are displayed correctly
+		this.usedUrlIndices = [];
 
 		// on my computer the Fontawesome Icons do not work without this when working under windows
 		// on the raspberry pi it works without this
@@ -128,10 +129,7 @@ Module.register("MMM-NextCloud-Tasks", {
 			link.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css";
 			document.head.appendChild(link);
 			document.documentElement.style.cursor = "default";
-			
-
 		}
-		
 
 		// create element wrapper for show into the module
 		let wrapper = document.createElement("div");
@@ -160,22 +158,20 @@ Module.register("MMM-NextCloud-Tasks", {
 
 	renderList: function (children, isTopLevel = true) {
 		let self = this;
-
-
 		let checked = "<span class=\"fa fa-fw fa-check-square\"></span>"
 		let unchecked = "<span class=\"fa fa-fw fa-square\"></span>"
 
 		let ul = document.createElement("ul");
 		for (const element of children) {
 			if (element.status === "COMPLETED") {
-			    if (typeof this.config.hideCompletedTasksAfter === "number" && element.completed) {
-			        // convert ISO 8601 string to date-objekt without moment.js
-			        const completedDate = new Date(element.completed); 
-			        const daysSinceCompleted = (new Date() - completedDate) / (1000 * 60 * 60 * 24);
-			        if (daysSinceCompleted > this.config.hideCompletedTasksAfter) {
-			            continue;
-			        }
-			    }
+				if (typeof this.config.hideCompletedTasksAfter === "number" && element.completed) {
+					// convert ISO 8601 string to date-objekt without moment.js
+					const completedDate = new Date(element.completed);
+					const daysSinceCompleted = (new Date() - completedDate) / (1000 * 60 * 60 * 24);
+					if (daysSinceCompleted > this.config.hideCompletedTasksAfter) {
+						continue;
+					}
+				}
 			}
 
 			const now = new Date();
@@ -221,9 +217,6 @@ Module.register("MMM-NextCloud-Tasks", {
 				}
 			}
 
-			
-
-
 			let listItemClass = "MMM-NextCloud-Tasks-List-Item";
 			let parentDivClass = "";
 			if (element.status === "COMPLETED") {
@@ -245,9 +238,7 @@ Module.register("MMM-NextCloud-Tasks", {
 				const canvas = li.querySelector("canvas.MMM-Nextcloud-Tasks-CompletionCanvas");
 				if (canvas) {
 					const ctx = canvas.getContext("2d");
-					
 					const size = this.config.pieChartSize;
-					
 					canvas.width = size;
 					canvas.height = size;
 					const completion = Number(element.completion) || 0;
@@ -257,7 +248,7 @@ Module.register("MMM-NextCloud-Tasks", {
 					const innerRadius = outerRadius - outerRadius * 0.9 / 2; // 90% of outer radius
 					const startAngle = -Math.PI / 2; // start at 12 o'clock
 					const endAngle = startAngle + (completion / 100) * 2 * Math.PI;
-		
+
 					// Draw background arc
 					ctx.fillStyle = self.config.pieChartBackgroundColor;
 					ctx.beginPath();
@@ -265,7 +256,7 @@ Module.register("MMM-NextCloud-Tasks", {
 					ctx.arc(centerX, centerY, innerRadius, 2 * Math.PI, 0, true);
 					ctx.closePath();
 					ctx.fill();
-		
+
 					// Draw completion arc
 					if (completion > 0) {
 						ctx.fillStyle = self.config.pieChartColor;
@@ -291,7 +282,7 @@ Module.register("MMM-NextCloud-Tasks", {
 				}
 
 				if (self.config.displayStartDate && element.start) {
-					let startDate = new Date(element.start); 
+					let startDate = new Date(element.start);
 					let spanStart = document.createElement("span");
 					spanStart.textContent = " " + startDate.toLocaleDateString(undefined, self.config.dateFormat);
 					if (now > startDate) {
@@ -301,9 +292,10 @@ Module.register("MMM-NextCloud-Tasks", {
 					}
 					dateSection.appendChild(spanStart);
 				}
-				if (self.config.displayDueDate && element.dueFormatted) {;
+				if (self.config.displayDueDate && element.dueFormatted) {
+					;
 					let spanDue = document.createElement("span");
-					let dueDate = new Date(element.start); 
+					let dueDate = new Date(element.start);
 					console.log("dueDate: " + element.dueFormatted);
 					console.log("now: " + now);
 					spanDue.textContent = " " + element.dueFormatted; //Date.toLocaleDateString(undefined, self.config.dateFormat);
@@ -317,7 +309,6 @@ Module.register("MMM-NextCloud-Tasks", {
 
 				li.appendChild(dateSection);
 			}
-
 
 			if (typeof element.children !== "undefined") {
 				let childList = self.renderList(element.children, false);
@@ -385,7 +376,7 @@ Module.register("MMM-NextCloud-Tasks", {
 
 				overlay.style.position = "absolute";
 				overlay.style.top = (item.offsetTop + this.config.offsetTop) + "px";
-				overlay.style.left = (item.offsetLeft + this.config.offsetLeft)+"px";
+				overlay.style.left = (item.offsetLeft + this.config.offsetLeft) + "px";
 				overlay.style.color = "red";
 				overlay.style.zIndex = "100000";
 				overlay.style.pointerEvents = "none";
@@ -436,8 +427,7 @@ Module.register("MMM-NextCloud-Tasks", {
 						}
 					}
 				}
-				
-				
+
 			};
 
 			const toggleCheck = (listItem) => {
@@ -452,7 +442,7 @@ Module.register("MMM-NextCloud-Tasks", {
 			const startHandler = () => {
 				Log.info("touch/mouse start on item: " + item.id);
 				resetEffects();
-				pressTimer = setTimeout(() => {}, this.config.toggleTime);
+				pressTimer = setTimeout(() => { }, this.config.toggleTime);
 				startEffects(item);
 			};
 
